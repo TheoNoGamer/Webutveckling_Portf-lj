@@ -1,5 +1,7 @@
-
-
+function resetGame() {
+    // Reset game state
+    console.log("Game reset");
+}
 
 function createDeck(deck, playerHand, dealerHand) {
     const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
@@ -79,7 +81,7 @@ function dealRandomCard(deck, hand) {
 
 
 
-function checkIfWinner(playerHand, dealerHand, deck) {
+function checkIfAbove21(playerHand, dealerHand, deck) {
     var playerScore = 0;
     var dealerScore = 0;
     
@@ -105,18 +107,43 @@ function playerTurn(deck, playerHand, dealerHand) {
     hitButton.addEventListener("click", function() {
         dealRandomCard(deck, playerHand);
         updateCardDisplay(playerHand, "player");
+
+        checkIfAbove21(playerHand, dealerHand, deck);
+
+        dealerTurn(deck, playerHand, dealerHand);
     });
     
     standButton.addEventListener("click", function() {
-        // TODO: Implement dealer's turn
+        dealerTurn(deck, playerHand, dealerHand);
     });
 
-    checkIfWinner(playerHand, dealerHand, deck);
+    checkIfAbove21(playerHand, dealerHand, deck);
 
 }
 
 function dealerTurn(deck, playerHand, dealerHand) {
-    // TODO: Implement dealer's turn
+
+    var totalDealerHand = 0;
+    
+    for (let index = 0; index < dealerHand.length; index += 3) {
+        totalDealerHand += dealerHand[index + 2];
+    }
+    
+    if (totalDealerHand < 17) {
+        setTimeout(function() {
+            dealRandomCard(deck, dealerHand);
+            updateCardDisplay(dealerHand, "dealer");
+
+            checkIfAbove21(playerHand, dealerHand, deck);
+        }, 1000);
+    }
+    else {
+        //playerTurn(deck, playerHand, dealerHand);
+    }
+
+    checkIfAbove21(playerHand, dealerHand, deck);
+
+    
 }
 
 function playLoop(deck, playerHand, dealerHand) {
@@ -124,8 +151,9 @@ function playLoop(deck, playerHand, dealerHand) {
     // TODO: Implement dealer's turn
     // TODO: Determine winner
     // TODO: Display results
-        
+    
     playerTurn(deck, playerHand, dealerHand);
+    
     
 
 
@@ -145,7 +173,7 @@ function gameLoop() {
     // 3. Deal initial cards (done)
     // 4. Display initial hands (done)
     // 5. Hide dealer's second card (done)
-    // 6. Player's turn
+    // 6. Player's turn 
     // 7. Dealer's turn
     // 8. Determine winner
     // 9. Display results
@@ -166,4 +194,4 @@ function gameLoop() {
 
 initGame();
 
-initGame();
+
