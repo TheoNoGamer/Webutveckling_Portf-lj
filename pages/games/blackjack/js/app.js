@@ -1,8 +1,3 @@
-function resetGame() {
-    // Reset game state
-    console.log("Game reset");
-}
-
 function createDeck(deck, playerHand, dealerHand) {
     const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
     const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -34,7 +29,9 @@ function dealInitialCards(deck, playerHand, dealerHand) {
 function hideDealersSecondCard() {
     var dealersCardDisplay = document.getElementById("dealer-card-display");
     var cards = dealersCardDisplay.getElementsByClassName("card");
-    cards[1].style.color = "red"; // to be transperant in final build
+    var dealerScoreElement = document.getElementById("dealer-score");
+    cards[1].style.color = "transparent"; 
+    dealerScoreElement.style.color = "transparent";
 }
 
 
@@ -44,6 +41,8 @@ function showDealersCards() {
     for (var i = 0; i < cards.length; i++) {
         cards[i].style.color = "black";
     }
+    var dealerScoreElement = document.getElementById("dealer-score");
+    dealerScoreElement.style.color = "black";
 } 
 
 
@@ -79,9 +78,18 @@ function dealRandomCard(deck, hand) {
     
 }
 
-
+function haveAce(hand) {
+    for (var i = 0; i < hand.length; i += 3) {
+        if (hand[i] === "A") {
+            return true;
+        }
+    }
+    return false;
+}
 
 function checkIfAbove21(playerHand, dealerHand, deck) {
+    var playerScoreElement = document.getElementById("player-score");
+    var dealerScoreElement = document.getElementById("dealer-score");
     var playerScore = 0;
     var dealerScore = 0;
     
@@ -92,11 +100,29 @@ function checkIfAbove21(playerHand, dealerHand, deck) {
     for (let index = 0; index < dealerHand.length; index += 3) {
         dealerScore += dealerHand[index + 2];
     }
-    
-    if (playerScore > 21 || dealerScore === 21) {
-        console.log("Dealer wins!");
+
+    if (playerScore > 21 && haveAce(playerHand)) {
+        playerScore -= 10;
+    }
+    if (dealerScore > 21 && haveAce(dealerHand)) {
+        dealerScore -= 10;
+    }
+
+    playerScoreElement.textContent = playerScore;
+    dealerScoreElement.textContent = dealerScore;
+    if (playerScore === 21 && dealerScore === 21) {
+        endGame(deck, playerHand, dealerHand, 'tie');
+        showDealersCards()
+    }
+    else if (playerScore > 21 || dealerScore === 21) {
+        endGame(deck, playerHand, dealerHand, 'dealer');
+        showDealersCards()
     } else if (dealerScore > 21 || playerScore === 21) {
-        console.log("Player wins!");
+        endGame(deck, playerHand, dealerHand, 'player');
+        showDealersCards()
+    }
+    else {
+        return true;
     }
 }
 
@@ -108,76 +134,124 @@ function playerTurn(deck, playerHand, dealerHand) {
         dealRandomCard(deck, playerHand);
         updateCardDisplay(playerHand, "player");
 
-        checkIfAbove21(playerHand, dealerHand, deck);
-
-        dealerTurn(deck, playerHand, dealerHand);
+        if (checkIfAbove21(playerHand, dealerHand, deck)) {
+            dealerTurn(deck, playerHand, dealerHand, 0);
+        }
     });
     
     standButton.addEventListener("click", function() {
-        dealerTurn(deck, playerHand, dealerHand);
+        dealerTurn(deck, playerHand, dealerHand, 1);
     });
 
     checkIfAbove21(playerHand, dealerHand, deck);
 
 }
 
-function dealerTurn(deck, playerHand, dealerHand) {
+function dealerTurn(deck, playerHand, dealerHand, playerStand) {
 
     var totalDealerHand = 0;
-    
-    for (let index = 0; index < dealerHand.length; index += 3) {
-        totalDealerHand += dealerHand[index + 2];
-    }
-    
-    if (totalDealerHand < 17) {
-        setTimeout(function() {
-            dealRandomCard(deck, dealerHand);
-            updateCardDisplay(dealerHand, "dealer");
 
-            checkIfAbove21(playerHand, dealerHand, deck);
-        }, 1000);
-    }
-    else {
-        //playerTurn(deck, playerHand, dealerHand);
-    }
+    setTimeout(function() {
+        showDealersCards();
+    
+    
+        for (let index = 0; index < dealerHand.length; index += 3) {
+            totalDealerHand += dealerHand[index + 2];
+            if (totalDealerHand > 21 && haveAce(dealerHand)) {
+                totalDealerHand -= 10;
+            }
+        }
+        
+        if (totalDealerHand < 17) {
+            setTimeout(function() {
+                dealRandomCard(deck, dealerHand);
+                updateCardDisplay(dealerHand, "dealer");
 
+                checkIfAbove21(playerHand, dealerHand, deck);
+            }, 800);
+        }
+    }, 400);
     checkIfAbove21(playerHand, dealerHand, deck);
 
-    
+    if (playerStand === 1) {
+        endGame(deck, playerHand, dealerHand, 'stand');
+    }
 }
 
-function playLoop(deck, playerHand, dealerHand) {
-    // TODO: Implement player's turn
-    // TODO: Implement dealer's turn
-    // TODO: Determine winner
-    // TODO: Display results
-    
-    playerTurn(deck, playerHand, dealerHand);
-    
-    
+function hasWon(player_or_dealer) {
 
-
-    
+    if (player_or_dealer === "player") {
+        console.log("Player won");
+    }
+    else if (player_or_dealer === "dealer") {
+        console.log("Dealer won");
+    }
+    else if (player_or_dealer === "tie") {
+        console.log("Tie");
+    }
 }
 
+function endGame(deck, playerHand, dealerHand, winner) {
+    console.log("Game ended");
 
+    if (winner == 'stand') {
+        var playerScoreElement = document.getElementById("player-score");
+        var dealerScoreElement = document.getElementById("dealer-score");
+        var playerScore = 0;
+        var dealerScore = 0;
+        
+        for (let index = 0; index < playerHand.length; index += 3) {
+            playerScore += playerHand[index + 2];
+        }
+        
+        for (let index = 0; index < dealerHand.length; index += 3) {
+            dealerScore += dealerHand[index + 2];
+        }
+
+        if (playerScore > 21 && haveAce(playerHand)) {
+            playerScore -= 10;
+        }
+        if (dealerScore > 21 && haveAce(dealerHand)) {
+            dealerScore -= 10;
+        }
+
+        playerScoreElement.textContent = playerScore;
+        dealerScoreElement.textContent = dealerScore;
+
+        if (playerScore > dealerScore) {
+            hasWon("player");
+        }
+        else if (playerScore < dealerScore) {
+            hasWon("dealer");
+        }
+        else {
+            hasWon("tie");
+        }
+
+
+    }
+    else if (winner == 'player') {
+        hasWon("player");
+    }
+    else if (winner == 'dealer') {
+        hasWon("dealer");
+    }
+    else if (winner == 'tie') {
+        hasWon("tie");
+    }
+    
+}
 
 function initGame() {
     gameLoop();
+
+    var restartButton = document.getElementById("restart-button");
+    restartButton.addEventListener("click", function() {
+        gameLoop();
+    });
 }
 
 function gameLoop() {
-    // TODO: Implement game logic
-    // 1. Create deck (done)
-    // 2. Shuffle deck (implemented partially when dealing random card)
-    // 3. Deal initial cards (done)
-    // 4. Display initial hands (done)
-    // 5. Hide dealer's second card (done)
-    // 6. Player's turn 
-    // 7. Dealer's turn
-    // 8. Determine winner
-    // 9. Display results
-
     var deck = [[], [], []]; // [0] = cards, [1] = suits, [2] = values
     var playerHand = [];
     var dealerHand = [];
@@ -187,7 +261,7 @@ function gameLoop() {
     dealInitialCards(deck, playerHand, dealerHand);
     console.log('deck after initial deal', deck);
 
-    playLoop(deck, playerHand, dealerHand);
+    playerTurn(deck, playerHand, dealerHand);
 
 }
 

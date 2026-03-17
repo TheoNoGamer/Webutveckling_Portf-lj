@@ -1,0 +1,160 @@
+{
+  "game": {
+    "name": "Blackjack",
+    "description": "A web-based implementation of the classic casino card game Blackjack (also known as 21)",
+    "version": "1.0.0",
+    "author": "Theo Lidec",
+    "last_updated": "2024-03-17"
+  },
+  "game_rules": {
+    "objective": "Get a hand value as close to 21 as possible without exceeding it, while beating the dealer's hand",
+    "card_values": {
+      "numbered_cards": "Face value (2-10)",
+      "face_cards": "Jack, Queen, King = 10 points each",
+      "aces": "11 points (can be reduced to 1 if hand exceeds 21)"
+    },
+    "gameplay": {
+      "initial_deal": "Both player and dealer receive 2 cards each",
+      "dealer_hidden_card": "Dealer's second card is hidden until player's turn ends",
+      "player_actions": ["Hit (draw another card)", "Stand (end turn and let dealer play)"],
+      "dealer_rules": "Dealer must hit on 16 and below, stand on 17 and above",
+      "win_conditions": {
+        "blackjack": "21 with first 2 cards",
+        "higher_score": "Higher score than dealer without exceeding 21",
+        "dealer_bust": "Dealer exceeds 21",
+        "tie": "Equal scores or both get 21"
+      },
+      "loss_conditions": ["Player exceeds 21", "Dealer has higher score"]
+    }
+  },
+  "architecture": {
+    "files": {
+      "app.js": "Main game logic and mechanics",
+      "game.html": "HTML structure and UI layout",
+      "style.css": "Visual styling and layout",
+      "doc.json": "This documentation file"
+    },
+    "data_structures": {
+      "deck": "3D array: [ranks[], suits[], values[]]",
+      "hand": "Array storing cards in format [rank, suit, value, rank, suit, value, ...]",
+      "game_state": "Managed through global variables and DOM manipulation"
+    },
+    "key_functions": [
+      {
+        "name": "createDeck",
+        "purpose": "Creates a shuffled deck of 52 cards",
+        "parameters": ["deck (array)", "playerHand (array)", "dealerHand (array)"],
+        "returns": "void"
+      },
+      {
+        "name": "dealInitialCards",
+        "purpose": "Deals 2 cards each to player and dealer",
+        "parameters": ["deck", "playerHand", "dealerHand"],
+        "returns": "void"
+      },
+      {
+        "name": "playerTurn",
+        "purpose": "Handles player input (hit/stand buttons)",
+        "parameters": ["deck", "playerHand", "dealerHand"],
+        "returns": "void"
+      },
+      {
+        "name": "dealerTurn",
+        "purpose": "Executes dealer logic (hit until 17+)",
+        "parameters": ["deck", "playerHand", "dealerHand", "playerStand"],
+        "returns": "void"
+      },
+      {
+        "name": "checkIfAbove21",
+        "purpose": "Calculates scores and checks win/lose conditions",
+        "parameters": ["playerHand", "dealerHand", "deck"],
+        "returns": "boolean (true if game continues)"
+      },
+      {
+        "name": "endGame",
+        "purpose": "Determines winner and logs result",
+        "parameters": ["deck", "playerHand", "dealerHand", "winner"],
+        "returns": "void"
+      },
+      {
+        "name": "hasWon",
+        "purpose": "Logs the winner to console",
+        "parameters": ["player_or_dealer"],
+        "returns": "void"
+      }
+    ]
+  },
+  "ui_components": {
+    "game_container": "Main wrapper div for the entire game",
+    "game_view": "Green background area containing all game elements",
+    "dealer_section": {
+      "title": "Dealer heading",
+      "score": "Dealer score display",
+      "card_display": "Container for dealer's cards"
+    },
+    "player_section": {
+      "title": "Player heading",
+      "score": "Player score display",
+      "card_display": "Container for player's cards",
+      "buttons": {
+        "hit": "Draw another card",
+        "stand": "End turn",
+        "restart": "Start new game"
+      }
+    },
+    "card_element": {
+      "structure": "Div with card-content containing suit and value",
+      "styling": "White background, black border, 100x140px",
+      "display_logic": "Initially hidden, shown when dealt"
+    }
+  },
+  "game_flow": {
+    "initialization": "initGame() -> gameLoop() -> createDeck()",
+    "setup": "dealInitialCards() -> hideDealersSecondCard()",
+    "player_phase": "playerTurn() -> event listeners for hit/stand",
+    "dealer_phase": "dealerTurn() -> automatic hitting with delays",
+    "scoring": "checkIfAbove21() called after each action",
+    "completion": "endGame() -> hasWon() -> restart option"
+  },
+  "technical_details": {
+    "card_representation": {
+      "format": "Each card stored as 3 consecutive array elements: [rank, suit, value]",
+      "suits": "['Hearts', 'Diamonds', 'Clubs', 'Spades']",
+      "ranks": "['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']",
+      "values": "[2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11]"
+    },
+    "ace_handling": {
+      "soft_17": "Aces initially worth 11, reduced to 1 if total > 21",
+      "detection": "haveAce() function checks for 'A' in hand",
+      "adjustment": "Score calculation subtracts 10 for each ace when needed"
+    },
+    "dom_manipulation": {
+      "card_display": "Dynamically created div elements appended to containers",
+      "score_updates": "Real-time score calculation and display",
+      "visibility_effects": "Color transparency for hidden dealer card"
+    },
+    "timing": {
+      "dealer_actions": "400ms delay before showing cards, 800ms between hits",
+      "purpose": "Simulates realistic dealer behavior"
+    }
+  },
+  "known_limitations": [
+    "No betting system implemented",
+    "No splitting or doubling down",
+    "No insurance option",
+    "Dealer hits on soft 17 (some casinos stand)",
+    "No multi-hand support",
+    "Console logging for winner determination (no UI feedback)",
+    "No deck penetration or card counting prevention"
+  ],
+  "future_improvements": [
+    "Add betting system with chip management",
+    "Implement splitting pairs",
+    "Add doubling down option",
+    "Improve winner display with visual feedback",
+    "Add sound effects",
+    "Implement proper game statistics tracking",
+    "Add multiple deck support",
+    "Include surrender option"
+  ]
+}
