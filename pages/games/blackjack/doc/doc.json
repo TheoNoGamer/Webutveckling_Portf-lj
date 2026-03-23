@@ -4,7 +4,7 @@
     "description": "A web-based implementation of the classic casino card game Blackjack (also known as 21)",
     "version": "1.0.0",
     "author": "Theo Lidec",
-    "last_updated": "2024-03-17"
+    "last_updated": "2026-03-17"
   },
   "game_rules": {
     "objective": "Get a hand value as close to 21 as possible without exceeding it, while beating the dealer's hand",
@@ -78,8 +78,56 @@
       },
       {
         "name": "hasWon",
-        "purpose": "Logs the winner to console",
+        "purpose": "Displays the winner popup",
         "parameters": ["player_or_dealer"],
+        "returns": "void"
+      },
+      {
+        "name": "hideDealersSecondCard",
+        "purpose": "Hides the dealer's second card and score during initial deal",
+        "parameters": [],
+        "returns": "void"
+      },
+      {
+        "name": "showDealersCards",
+        "purpose": "Reveals the dealer's hidden cards and score",
+        "parameters": [],
+        "returns": "void"
+      },
+      {
+        "name": "updateCardDisplay",
+        "purpose": "Updates the DOM to display the current hand cards",
+        "parameters": ["hand (array)", "playerOrDealer (string)"],
+        "returns": "void"
+      },
+      {
+        "name": "dealRandomCard",
+        "purpose": "Draws a random card from the deck and adds it to the hand",
+        "parameters": ["deck (array)", "hand (array)"],
+        "returns": "void"
+      },
+      {
+        "name": "haveAce",
+        "purpose": "Checks if the hand contains an Ace",
+        "parameters": ["hand (array)"],
+        "returns": "boolean"
+      },
+      {
+        "name": "winnerPopup",
+        "purpose": "Displays a popup showing the game winner",
+        "parameters": ["winner (string)"],
+        "returns": "void"
+      },
+      {
+        "name": "initGame",
+        "purpose": "Initializes the game and sets up restart functionality",
+        "parameters": [],
+        "returns": "void"
+      },
+      {
+        "name": "gameLoop",
+        "purpose": "Main game loop that resets hands and starts a new round",
+        "parameters": [],
         "returns": "void"
       }
     ]
@@ -106,6 +154,11 @@
       "structure": "Div with card-content containing suit and value",
       "styling": "White background, black border, 100x140px",
       "display_logic": "Initially hidden, shown when dealt"
+    },
+    "winner-popup": {
+      "structure": "Modal overlay with winner text and restart button",
+      "display": "Initially hidden, shown after game ends",
+      "restart_button": "Restarts the game and hides the popup"
     }
   },
   "game_flow": {
@@ -144,7 +197,6 @@
     "No insurance option",
     "Dealer hits on soft 17 (some casinos stand)",
     "No multi-hand support",
-    "Console logging for winner determination (no UI feedback)",
     "No deck penetration or card counting prevention"
   ],
   "future_improvements": [

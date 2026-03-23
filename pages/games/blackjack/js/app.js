@@ -15,10 +15,31 @@ function createDeck(deck, playerHand, dealerHand) {
 }
 
 function dealInitialCards(deck, playerHand, dealerHand) {
-    dealRandomCard(deck, playerHand);
-    dealRandomCard(deck, dealerHand);
-    dealRandomCard(deck, playerHand);
-    dealRandomCard(deck, dealerHand);
+    var debugDealerCards = false; // Debug: give dealer two aces
+
+    if (debugDealerCards) {
+        playerHand.push('A');
+        playerHand.push('Hearts');
+        playerHand.push(11);
+        playerHand.push('A');
+        playerHand.push('Diamonds');
+        playerHand.push(11);
+    } else {
+        dealRandomCard(deck, playerHand);
+        dealRandomCard(deck, playerHand);
+    }
+
+    if (debugDealerCards) {
+        dealerHand.push('A');
+        dealerHand.push('Clubs');
+        dealerHand.push(11);
+        dealerHand.push('A');
+        dealerHand.push('Spades');
+        dealerHand.push(11);
+    } else {
+        dealRandomCard(deck, dealerHand);
+        dealRandomCard(deck, dealerHand);
+    }
 
     updateCardDisplay(playerHand, "player");
     updateCardDisplay(dealerHand, "dealer");
@@ -31,9 +52,8 @@ function hideDealersSecondCard() {
     var cards = dealersCardDisplay.getElementsByClassName("card");
     var dealerScoreElement = document.getElementById("dealer-score");
     cards[1].style.color = "transparent"; 
-    dealerScoreElement.style.color = "transparent";
+    dealerScoreElement.style.display = "none";
 }
-
 
 function showDealersCards() {
     var dealersCardDisplay = document.getElementById("dealer-card-display");
@@ -42,9 +62,8 @@ function showDealersCards() {
         cards[i].style.color = "black";
     }
     var dealerScoreElement = document.getElementById("dealer-score");
-    dealerScoreElement.style.color = "black";
+    dealerScoreElement.style.display = "block";
 } 
-
 
 function updateCardDisplay(hand, playerOrDealer) {
     var cardDisplay = document.getElementById(playerOrDealer + "-card-display");
@@ -78,48 +97,50 @@ function dealRandomCard(deck, hand) {
     
 }
 
-function haveAce(hand) {
-    for (var i = 0; i < hand.length; i += 3) {
-        if (hand[i] === "A") {
-            return true;
-        }
-    }
-    return false;
-}
-
 function checkIfAbove21(playerHand, dealerHand, deck) {
     var playerScoreElement = document.getElementById("player-score");
     var dealerScoreElement = document.getElementById("dealer-score");
     var playerScore = 0;
     var dealerScore = 0;
     
+    var playerAces = 0;
     for (let index = 0; index < playerHand.length; index += 3) {
         playerScore += playerHand[index + 2];
+        if (playerHand[index] == 'A') {
+            playerAces++;
+        }
     }
     
+    while (playerScore > 21 && playerAces > 0) {
+        playerScore -= 10;
+        playerAces--;
+    }
+    
+    var dealerAces = 0;
     for (let index = 0; index < dealerHand.length; index += 3) {
         dealerScore += dealerHand[index + 2];
+        if (dealerHand[index] == 'A') {
+            dealerAces++;
+        }
     }
-
-    if (playerScore > 21 && haveAce(playerHand)) {
-        playerScore -= 10;
-    }
-    if (dealerScore > 21 && haveAce(dealerHand)) {
+    
+    while (dealerScore > 21 && dealerAces > 0) {
         dealerScore -= 10;
+        dealerAces--;
     }
 
     playerScoreElement.textContent = playerScore;
     dealerScoreElement.textContent = dealerScore;
     if (playerScore === 21 && dealerScore === 21) {
-        endGame(deck, playerHand, dealerHand, 'tie');
         showDealersCards()
+        endGame(deck, playerHand, dealerHand, 'tie');
     }
     else if (playerScore > 21 || dealerScore === 21) {
+        showDealersCards()
         endGame(deck, playerHand, dealerHand, 'dealer');
-        showDealersCards()
     } else if (dealerScore > 21 || playerScore === 21) {
-        endGame(deck, playerHand, dealerHand, 'player');
         showDealersCards()
+        endGame(deck, playerHand, dealerHand, 'player');
     }
     else {
         return true;
@@ -155,11 +176,17 @@ function dealerTurn(deck, playerHand, dealerHand, playerStand) {
         showDealersCards();
     
     
+        var dealerAces = 0;
         for (let index = 0; index < dealerHand.length; index += 3) {
             totalDealerHand += dealerHand[index + 2];
-            if (totalDealerHand > 21 && haveAce(dealerHand)) {
-                totalDealerHand -= 10;
+            if (dealerHand[index] == 'A') {
+                dealerAces++;
             }
+        }
+        
+        while (totalDealerHand > 21 && dealerAces > 0) {
+            totalDealerHand -= 10;
+            dealerAces--;
         }
         
         if (totalDealerHand < 17) {
@@ -178,16 +205,34 @@ function dealerTurn(deck, playerHand, dealerHand, playerStand) {
     }
 }
 
+function winnerPopup(winner) {
+
+    setTimeout(function() {
+        var popup = document.getElementById("winner-popup");
+        popup.style.display = "block";
+        
+        var winnerText = document.getElementById("winner-text");
+
+        if (winner === "tie") {
+            winnerText.textContent = "It's a tie!";
+        } else {
+            winnerText.textContent = winner + " wins!";
+        }
+
+
+    }, 500);
+}
+
 function hasWon(player_or_dealer) {
 
     if (player_or_dealer === "player") {
-        console.log("Player won");
+        winnerPopup("player");
     }
     else if (player_or_dealer === "dealer") {
-        console.log("Dealer won");
+        winnerPopup("dealer");
     }
     else if (player_or_dealer === "tie") {
-        console.log("Tie");
+        winnerPopup("tie");
     }
 }
 
@@ -200,19 +245,30 @@ function endGame(deck, playerHand, dealerHand, winner) {
         var playerScore = 0;
         var dealerScore = 0;
         
+        var playerAces = 0;
         for (let index = 0; index < playerHand.length; index += 3) {
             playerScore += playerHand[index + 2];
+            if (playerHand[index] == 'A') {
+                playerAces++;
+            }
         }
         
+        while (playerScore > 21 && playerAces > 0) {
+            playerScore -= 10;
+            playerAces--;
+        }
+        
+        var dealerAces = 0;
         for (let index = 0; index < dealerHand.length; index += 3) {
             dealerScore += dealerHand[index + 2];
+            if (dealerHand[index] == 'A') {
+                dealerAces++;
+            }
         }
-
-        if (playerScore > 21 && haveAce(playerHand)) {
-            playerScore -= 10;
-        }
-        if (dealerScore > 21 && haveAce(dealerHand)) {
+        
+        while (dealerScore > 21 && dealerAces > 0) {
             dealerScore -= 10;
+            dealerAces--;
         }
 
         playerScoreElement.textContent = playerScore;
@@ -247,6 +303,9 @@ function initGame() {
 
     var restartButton = document.getElementById("restart-button");
     restartButton.addEventListener("click", function() {
+        var popup = document.getElementById("winner-popup");
+        popup.style.display = "none";
+        console.clear("Reset game");
         gameLoop();
     });
 }
@@ -259,7 +318,6 @@ function gameLoop() {
     createDeck(deck, playerHand, dealerHand);
 
     dealInitialCards(deck, playerHand, dealerHand);
-    console.log('deck after initial deal', deck);
 
     playerTurn(deck, playerHand, dealerHand);
 
